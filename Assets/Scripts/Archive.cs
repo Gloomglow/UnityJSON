@@ -1,30 +1,63 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-//New References//
 using System.IO;
-using LitJson;
+
 
 public class Archive : MonoBehaviour 
 {
-    //File Paths -- Use Forward Slashes// 
-    public static string dataDirectory = "C:/Users/Andrew/Desktop/Gloom/UnityJSON/Assets/JSON/";
+    [Header("InputFields")]
+    public string InputName;
+    public int InputLevel;
+    public bool InputAlive;
+    public double InputHealth;
+    public double[] InputPosition;
 
-    //Read and Write//
-    public static SampleData ReadSampleData(string fileName)
+    //Read & Write//
+    public void ReadPlayer()
     {
-        string jsonString = File.ReadAllText(dataDirectory + fileName + ".json");
-        return JsonMapper.ToObject<SampleData>(jsonString);
+        if (File.Exists(Player.PlayerDirectory + InputName + ".json"))
+        {
+            Player readPlayer = Player.ReadPlayerJSON(InputName);
+
+            Debug.Log(readPlayer.playerName);
+            Debug.Log(readPlayer.playerLevel);
+            Debug.Log(readPlayer.playerIsAlive);
+            Debug.Log(readPlayer.playerHealth);
+            Debug.Log(readPlayer.playerPosition[0]);
+            Debug.Log(readPlayer.playerPosition[1]);
+            Debug.Log(readPlayer.playerPosition[2]);
+        }
+        else
+        {
+            Debug.Log("File path does not exist!");
+        }
     }
-    public static void WriteSampleData(SampleData data)
+    public void WritePlayer()
     {
-        JsonData jsonData = JsonMapper.ToJson(data);
-        string jsonString = jsonData.ToString();
-        File.WriteAllText(dataDirectory + data.sampleName + ".json", jsonString);
+        Player writePlayer = new Player()
+        {
+            playerName = InputName,
+            playerLevel = InputLevel,
+            playerHealth = InputHealth,
+            playerIsAlive = InputAlive,
+            playerPosition = InputPosition
+        };
+
+        if(writePlayer.playerName != "")
+        {
+            Player.WritePlayerJSON(writePlayer);
+        }
+
     }
- 
-    //Utility Functions// 
+    public void ClearPlayers()
+    {
+        ClearDirectory(Player.PlayerDirectory); 
+    }
+
+
+
+    //Utility// 
     public static void ClearDirectory(string path)
     {
         string[] allPaths = Directory.GetFiles(path);
@@ -46,23 +79,6 @@ public class Archive : MonoBehaviour
 
 }
 
-public class SampleData
-{
-    public string sampleName; 
-    public int sampleInteger;
-    public double sampleDouble; 
-    public bool sampleBool;
 
-    public double XLocation;
-    public double YLocation;
-    public double ZLocation;
-    public double YRotation;
 
-    public double[] samplePosition; 
-    //ie. samplePosition[0] is X, 1 is Y, and 2 is Z. 
-}
 
-//Note : Floats are not supported by JSON. 
-//Use (double) or (float) to cast back and forth// 
-//Vector3 and other unity classes are also not recognized.//
-//Store individual values, or use an array. After all, a Vector3 is just 3 numbers!// 
